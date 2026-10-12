@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+bcrypt
+google-genai
+python-dotenv
+sentence-transformers
+faiss-cpu
+pypdf
+langchain-text-splitters
+yfinance

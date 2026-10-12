@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinSight 360 — GenAI & RAG Financial Planner</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind Config for Dark Aesthetic -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            zinc: {
+              950: '#09090b',
+              900: '#18181b',
+              850: '#202024',
+              800: '#27272a',
+              750: '#3f3f46',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #09090b;
+      color: #fafafa;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      background: #fafafa;
+      cursor: pointer;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(24, 24, 27, 0.5);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #3f3f46;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="min-h-screen relative flex flex-col justify-between overflow-x-hidden selection:bg-white selection:text-black">
+
+  <!-- Background Glow Effects -->
+  <div class="absolute top-[-10%] left-[-15%] w-[60%] h-[40%] rounded-full bg-zinc-800/10 blur-[130px] pointer-events-none"></div>
+  <div class="absolute bottom-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-zinc-900/10 blur-[150px] pointer-events-none"></div>
+
+  <!-- ========================================================================= -->
+  <!-- 1. LANDING PAGE VIEW                                                      -->
+  <!-- ========================================================================= -->
+  <div id="landing-view" class="w-full flex flex-col justify-between flex-grow z-10 transition-opacity duration-500">
+    <!-- Header -->
+    <header class="sticky top-0 w-full z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900/80">
+      <div class="w-full max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <div class="p-1 bg-white text-black rounded">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+          </div>
+          <span class="text-white font-sans text-lg tracking-tight font-bold">FinSight 360</span>
+        </div>
+        <button onclick="launchApp()" class="px-4 py-2 text-xs font-semibold bg-white text-black hover:bg-zinc-200 rounded-lg transition shadow-sm flex items-center gap-1.5">
+          <span>Launch Cockpit</span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="relative w-full max-w-7xl mx-auto px-6 pt-20 pb-16 text-center flex flex-col items-center">
+      <div class="space-y-6 max-w-4xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-[10px] font-mono tracking-wider text-zinc-400 uppercase">Interactive Indian market What-If simulations active</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-7xl font-sans font-bold tracking-tight text-white leading-[1.05]">
+          Personal finance, <br>
+          <span class="bg-gradient-to-r from-zinc-300 via-zinc-100 to-zinc-400 bg-clip-text text-transparent underline decoration-zinc-800 underline-offset-[12px]">
+            stress-tested.
+          </span>
+        </h1>
+
+        <p class="text-sm sm:text-base text-zinc-400 max-w-xl mx-auto leading-relaxed pt-2">
+          FinSight 360 aggregates your goals, runs deterministic future cash-flow simulations, and offers immediate corrective planning—backed by regulatory RAG document matching.
+        </p>
+
+        <div class="flex flex-col sm:flex-row justify-center items-center gap-4 pt-6">
+          <button onclick="launchApp()" class="group w-full sm:w-auto px-6 py-3.5 bg-white text-black hover:bg-zinc-200 font-medium rounded-lg text-sm transition flex items-center justify-center gap-2 shadow-md">
+            Launch Financial Cockpit
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </button>
+          <a href="#features" class="w-full sm:w-auto px-6 py-3.5 bg-zinc-900 hover:bg-zinc-850 text-white font-medium border border-zinc-800 hover:border-zinc-700 rounded-lg text-sm transition flex justify-center items-center">
+            Explore Features
+          </a>
+        </div>
+      </div>
+
+      <!-- Preview Mockup -->
+      <div class="w-full max-w-5xl mt-16 p-2 rounded-2xl bg-zinc-900/20 border border-zinc-900 backdrop-blur-sm relative overflow-hidden">
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f1f23_1px,transparent_1px),linear-gradient(to_bottom,#1f1f23_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-[0.15]"></div>
+        <div class="rounded-xl border border-zinc-800 bg-[#0c0c0e] p-6 text-left relative z-10 space-y-6">
+          <div class="flex justify-between items-center border-b border-zinc-900 pb-6">
+            <div>
+              <div class="text-[10px] font-mono text-zinc-550 uppercase">Scenario: alex_profile_active</div>
+              <h3 class="text-lg font-bold text-white mt-1">Overview projections dashboard</h3>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-emerald-950/30 border border-emerald-900/50 text-[10px] font-mono text-emerald-400">
+              Feasible Plan A
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <div>
+              <span class="text-[10px] text-zinc-550 block font-mono">25-Yr End Balance</span>
+              <div class="text-2xl font-bold text-white mt-1">₹3.85Cr</div>
+            </div>
+            <div>
+              <span class="text-[10px] text-zinc-550 block font-mono">Monthly Savings</span>
+              <div class="text-2xl font-bold text-zinc-300 mt-1">₹50,000</div>
+            </div>
+            <div>
+              <span class="text-[10px] text-zinc-550 block font-mono">Emergency Buffer</span>
+              <div class="text-2xl font-bold text-emerald-400 mt-1">7.1 Months</div>
+            </div>
+            <div>
+              <span class="text-[10px] text-zinc-550 block font-mono">Goal Success Rate</span>
+              <div class="text-2xl font-bold text-zinc-300 mt-1">100%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trusted Section -->
+    <section class="w-full border-y border-zinc-900 py-10 bg-zinc-950/40">
+      <div class="w-full max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-3 text-zinc-400 text-xs font-mono">
+          <i data-lucide="lock" class="w-3.5 h-3.5 text-emerald-500"></i>
+          <span class="uppercase tracking-widest text-[10px]">Data privacy guaranteed</span>
+          <span class="text-zinc-700">|</span>
+          <span class="text-zinc-500">Zero Server-Side Storage Options</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-8 opacity-45 grayscale">
+          <span class="font-semibold tracking-wider font-mono text-sm text-zinc-400">SEBI COM</span>
+          <span class="font-semibold tracking-wider font-mono text-sm text-zinc-400">RBI SEC</span>
+          <span class="font-semibold tracking-wider font-mono text-sm text-zinc-400">50-30-20</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Bento Grid -->
+    <section id="features" class="w-full max-w-7xl mx-auto px-6 py-24 space-y-12">
+      <div class="max-w-2xl">
+        <span class="text-xs font-mono text-zinc-500 uppercase tracking-widest font-semibold">Engineered with Precision</span>
+        <h2 class="text-3xl sm:text-5xl font-bold tracking-tight text-white mt-2">What makes FinSight 360 unique.</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2 p-8 rounded-xl bg-zinc-900/20 border border-zinc-900 hover:border-zinc-800 transition flex flex-col justify-between gap-6">
+          <div>
+            <div class="p-3 bg-zinc-900 border border-zinc-850 rounded-lg w-fit">
+              <i data-lucide="layers" class="w-5 h-5 text-white"></i>
+            </div>
+            <h3 class="font-bold text-xl text-white mt-4">Interactive What-If Simulation Engine</h3>
+            <p class="text-sm text-zinc-400 mt-2 leading-relaxed max-w-lg">
+              Simulate real-life challenges like Job Loss, inflation increases, or market downturns. Watch how timelines, cash limits, and conflicts adjust in real time.
+            </p>
+          </div>
+          <div class="border border-zinc-900 bg-zinc-950/80 rounded-lg p-4 flex justify-between items-center text-xs font-mono">
+            <span class="text-zinc-300 font-medium">Job Loss stress-test models</span>
+            <span class="text-zinc-500">First-year assets calculations</span>
+          </div>
+        </div>
+
+        <div class="p-8 rounded-xl bg-zinc-900/20 border border-zinc-900 hover:border-zinc-800 transition flex flex-col justify-between gap-6">
+          <div>
+            <div class="p-3 bg-zinc-900 border border-zinc-850 rounded-lg w-fit">
+              <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+            </div>
+            <h3 class="font-bold text-xl text-white mt-4">Automated Goal Prioritizer</h3>
+            <p class="text-sm text-zinc-400 mt-2 leading-relaxed">
+              Flags overlapping goals automatically. Suggests delay limits or accelerated budget cuts to secure target timelines.
+            </p>
+          </div>
+          <div class="flex gap-2">
+            <span class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-400">Rule-based optimizer</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-7xl mx-auto px-6 py-12 border-t border-zinc-900 text-center sm:text-left">
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-6">
+        <div class="flex items-center gap-2">
+          <div class="p-1 bg-white text-black rounded">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          </div>
+          <span class="text-white">FinSight 360</span>
+        </div>
+        <div class="text-xs text-zinc-500 flex gap-6">
+          <span>© 2026 FinSight 360 Inc.</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. DASHBOARD VIEW (APP ACTIVE)                                            -->
+  <!-- ========================================================================= -->
+  <div id="app-view" class="w-full flex-grow flex flex-col justify-between hidden transition-opacity duration-500">
+    <div>
+      <!-- Navbar -->
+      <header class="sticky top-0 w-full z-50 bg-[#09090b]/80 backdrop-blur-md border-b border-zinc-900">
+        <div class="w-full max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div class="flex items-center gap-2 cursor-pointer" onclick="setActiveTab('overview')">
+            <div class="p-1.5 bg-emerald-500 text-black rounded shadow-md">
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-white font-sans text-lg tracking-tight font-bold leading-none">FinSight 360</span>
+              <span class="text-[9px] font-mono text-zinc-500 mt-0.5 tracking-wider uppercase">GenAI + RAG Financial Planner</span>
+            </div>
+          </div>
+
+          <nav class="flex flex-wrap justify-center gap-1 bg-zinc-900/50 p-1 rounded-xl border border-zinc-800">
+            <button id="tab-btn-overview" onclick="setActiveTab('overview')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition text-white bg-zinc-850">
+              <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>Overview</span>
+            </button>
+            <button id="tab-btn-simulator" onclick="setActiveTab('simulator')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition text-zinc-400 hover:text-white">
+              <i data-lucide="sliders" class="w-3.5 h-3.5 text-zinc-500"></i>
+              <span>What-If Simulator</span>
+            </button>
+            <button id="tab-btn-chat" onclick="setActiveTab('chat')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition text-zinc-400 hover:text-white">
+              <i data-lucide="message-square" class="w-3.5 h-3.5 text-zinc-500"></i>
+              <span>RAG Advisor</span>
+            </button>
+            <button id="tab-btn-comparison" onclick="setActiveTab('comparison')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition text-zinc-400 hover:text-white">
+              <i data-lucide="compass" class="w-3.5 h-3.5 text-zinc-500"></i>
+              <span>Plan Comparison</span>
+            </button>
+            <button id="tab-btn-profile" onclick="setActiveTab('profile')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition text-zinc-400 hover:text-white">
+              <i data-lucide="user" class="w-3.5 h-3.5 text-zinc-500"></i>
+              <span>Profile & Goals</span>
+            </button>
+          </nav>
+
+          <div id="status-badge-container">
+            <!-- Dynamic Feasibility Badge -->
+          </div>
+        </div>
+      </header>
+
+      <!-- Status Bar -->
+      <div class="w-full bg-zinc-950 border-b border-zinc-900 py-2.5 px-6">
+        <div class="w-full max-w-7xl mx-auto flex justify-between items-center text-[10px] font-mono text-zinc-550">
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <span>Active Profile: Alex (30yo)</span>
+            <span class="text-zinc-800">|</span>
+            <span id="status-savings">Current Savings: ₹50,000/mo</span>
+            <span class="text-zinc-800">|</span>
+            <span id="status-buffer">Buffer: 7.1 Months</span>
+          </div>
+          <button onclick="logoutApp()" class="flex items-center gap-1.5 text-zinc-450 hover:text-white transition">
+            <span>Exit Cockpit</span>
+            <i data-lucide="log-out" class="w-3 h-3"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Area -->
+    <div class="w-full max-w-7xl mx-auto px-6 py-8 flex-grow">
+      <!-- 1. OVERVIEW PAGE -->
+      <div id="tab-content-overview" class="space-y-8">
+        <!-- Overview summary grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="p-5 rounded-xl border border-zinc-900 bg-zinc-900/10 backdrop-blur-sm space-y-1">
+            <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Ending Wealth (30-Yr)</span>
+            <div id="card-ending-wealth" class="text-2xl font-bold text-white font-mono">₹0</div>
+            <span id="card-ending-desc" class="text-[9px] text-zinc-650 block">Target with expected return of 12%</span>
+          </div>
+
+          <div class="p-5 rounded-xl border border-zinc-900 bg-zinc-900/10 backdrop-blur-sm space-y-1">
+            <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Monthly Savings Rate</span>
+            <div id="card-savings-rate" class="text-2xl font-bold text-white font-mono">₹0</div>
+            <span id="card-savings-desc" class="text-[9px] text-zinc-650 block">Savings rate of 42% of income</span>
+          </div>
+
+          <div class="p-5 rounded-xl border border-zinc-900 bg-zinc-900/10 backdrop-blur-sm space-y-1">
+            <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Emergency Cash Buffer</span>
+            <div id="card-buffer-months" class="text-2xl font-bold font-mono text-emerald-400">7.1 Months</div>
+            <span id="card-buffer-desc" class="text-[9px] text-zinc-650 block">Recommended buffer is 6.0 Months (₹4,20,000)</span>
+          </div>
+
+          <div class="p-5 rounded-xl border border-zinc-900 bg-zinc-900/10 backdrop-blur-sm space-y-1">
+            <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Goal Feasibility Index</span>
+            <div id="card-feasibility-index" class="text-2xl font-bold font-mono text-emerald-400">100%</div>
+            <span id="card-feasibility-desc" class="text-[9px] text-zinc-650 block">Checks funding safety for 3 target goals</span>
+          </div>
+        </div>
+
+        <!-- Chart container -->
+        <div id="overview-chart-panel" class="space-y-6"></div>
+      </div>
+
+      <!-- 2. SIMULATOR PAGE -->
+      <div id="tab-content-simulator" class="space-y-8 hidden">
+        <div id="simulator-chart-panel"></div>
+
+        <!-- Simulator Controls -->
+        <div class="p-6 rounded-xl border border-zinc-900 bg-zinc-900/10 backdrop-blur-sm space-y-6">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="text-lg font-bold text-white">What-If Scenario Simulator</h3>
+              <p class="text-xs text-zinc-550 mt-1">Simulate macroeconomic volatility and personal cash-flow changes to stress-test your plans.</p>
+            </div>
+            <button onclick="resetSimulation()" class="px-2.5 py-1 text-[10px] font-mono text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-700 bg-zinc-950 rounded transition">
+              Reset Simulator
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Job Loss -->
+            <div class="space-y-3">
+              <div class="flex justify-between text-xs">
+                <span class="text-zinc-400 font-semibold">Income Disruption (Job Loss)</span>
+                <span id="val-job-loss" class="text-white font-mono font-bold bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">0 Months</span>
+              </div>
+              <input type="range" id="sim-job-loss" min="0" max="12" step="1" value="0" oninput="updateSimValue('jobLossMonths', this.value)" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white">
+              <p class="text-[10px] text-zinc-500 leading-relaxed">
+                Simulates a layoff in Year 1. Monthly income goes to ₹0, draining assets to cover expenditures.
+              </p>
+            </div>
+
+            <!-- Salary Hike -->
+            <div class="space-y-3">
+              <div class="flex justify-between text-xs">
+                <span class="text-zinc-400 font-semibold">Salary Hike / Step-up Increase</span>
+                <span id="val-salary-hike" class="text-white font-mono font-bold bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">+0%</span>
+              </div>
+              <input type="range" id="sim-salary-hike" min="0" max="100" step="5" value="0" oninput="updateSimValue('salaryHikePercent', this.value)" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white">
+              <p class="text-[10px] text-zinc-500 leading-relaxed">
+                Simulates a career promotion or raise, increasing monthly savings margin and rate of compounding.
+              </p>
+            </div>
+
+            <!-- Market Crash -->
+            <div class="space-y-3">
+              <div class="flex justify-between text-xs">
+                <span class="text-zinc-400 font-semibold">Immediate Portfolio Crash</span>
+                <span id="val-market-crash" class="text-rose-400 font-mono font-bold bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">-0%</span>
+              </div>
+              <input type="range" id="sim-market-crash" min="0" max="50" step="5" value="0" oninput="updateSimValue('marketCrashPercent', this.value)" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white">
+              <p class="text-[10px] text-zinc-500 leading-relaxed">
+                Applies an immediate asset depreciation hit to your starting portfolio value in Year 1.
+              </p>
+            </div>
+
+            <!-- Inflation Spike -->
+            <div class="space-y-3">
+              <div class="flex justify-between text-xs">
+                <span class="text-zinc-400 font-semibold">Inflation Rate Hike</span>
+                <span id="val-inflation-spike" class="text-rose-400 font-mono font-bold bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800">+0% p.a.</span>
+              </div>
+              <input type="range" id="sim-inflation-spike" min="0" max="10" step="0.5" value="0" oninput="updateSimValue('inflationSpikePercent', this.value)" class="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white">
+              <p class="text-[10px] text-zinc-500 leading-relaxed">
+                Adds incremental macro inflation to future goal target amounts, requiring a larger final corpus.
+              </p>
+            </div>
+          </div>
+
+          <!-- Alert banner -->
+          <div id="sim-alert-banner" class="pt-4 border-t border-zinc-900"></div>
+        </div>
+      </div>
+
+      <!-- 3. RAG ADVISOR PAGE -->
+      <div id="tab-content-chat" class="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[500px] hidden">
+        <!-- Chat logs -->
+        <div class="lg:col-span-2 flex flex-col justify-between rounded-xl border border-zinc-900 bg-[#0c0c0e] overflow-hidden shadow-xl">
+          <div class="px-6 py-4 border-b border-zinc-900 bg-zinc-900/10 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400"></i>
+              <span class="font-bold text-xs text-white uppercase tracking-wider">Active RAG Chat Advisor</span>
+            </div>
+            <span class="text-[10px] text-zinc-555 font-mono">Knowledge Base: Active</span>
+          </div>
+
+          <!-- Chat log output -->
+          <div id="chat-logs" class="flex-grow overflow-y-auto p-6 space-y-4 max-h-[340px] custom-scrollbar">
+            <!-- Initial Msg -->
+          </div>
+
+          <!-- Typing state -->
+          <div id="chat-typing-indicator" class="hidden px-6 py-2 bg-zinc-950/20 text-[11px] text-zinc-500 font-mono flex items-center gap-2">
+            <span class="animate-bounce">●</span>
+            <span>Searching guidelines and matching semantic context...</span>
+          </div>
+
+          <!-- Chat input -->
+          <div class="p-4 border-t border-zinc-900 bg-zinc-900/5 flex gap-2">
+            <input type="text" id="chat-input" onkeydown="if(event.key === 'Enter') sendChatMessage()" placeholder="Ask a financial planning or regulation question..." class="flex-1 bg-zinc-955 border border-zinc-850 focus:border-zinc-700 focus:outline-none rounded-lg px-4 py-2 text-xs text-white placeholder-zinc-700">
+            <button onclick="sendChatMessage()" class="p-2 rounded-lg bg-white text-black hover:bg-zinc-200 transition">
+              <i data-lucide="arrow-up" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- RAG contexts and sidebar -->
+        <div class="flex flex-col gap-4">
+          <!-- Presets -->
+          <div class="p-6 rounded-xl border border-zinc-900 bg-zinc-900/10 backdrop-blur-sm space-y-4">
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Suggested Queries</h4>
+            <div class="flex flex-col gap-2">
+              <button onclick="triggerPresetChat('can_achieve')" class="w-full text-left p-2.5 rounded-lg border border-zinc-900 hover:border-zinc-800 bg-zinc-950/30 hover:bg-zinc-950/60 transition text-[11px] text-zinc-400 hover:text-white">
+                Can I achieve my financial goals?
+              </button>
+              <button onclick="triggerPresetChat('emergency')" class="w-full text-left p-2.5 rounded-lg border border-zinc-900 hover:border-zinc-800 bg-zinc-950/30 hover:bg-zinc-950/60 transition text-[11px] text-zinc-400 hover:text-white">
+                How should I structure my emergency fund?
+              </button>
+              <button onclick="triggerPresetChat('sebi')" class="w-full text-left p-2.5 rounded-lg border border-zinc-900 hover:border-zinc-800 bg-zinc-950/30 hover:bg-zinc-950/60 transition text-[11px] text-zinc-400 hover:text-white">
+                Explain SEBI investor education rules.
+              </button>
+              <button onclick="triggerPresetChat('budget_rule')" class="w-full text-left p-2.5 rounded-lg border border-zinc-900 hover:border-zinc-800 bg-zinc-950/30 hover:bg-zinc-950/60 transition text-[11px] text-zinc-400 hover:text-white">
+                What is the 50/30/20 rule of saving?
+              </button>
+            </div>
+          </div>
+
+          <!-- Retrieved RAG contexts -->
+          <div class="flex-grow p-6 rounded-xl border border-zinc-900 bg-[#0c0c0e] space-y-4 overflow-y-auto max-h-[220px] custom-scrollbar">
+            <div class="flex items-center gap-2 text-emerald-400 border-b border-zinc-900 pb-2">
+              <i data-lucide="book-open" class="w-4 h-4"></i>
+              <h4 class="text-xs font-bold uppercase tracking-wider">Retrieved RAG Context</h4>
+            </div>
+            <div id="retrieved-contexts-container" class="space-y-3">
+              <p class="text-[10px] text-zinc-650 leading-relaxed font-mono">
+                Retrieved chunks from sebi_investor_edu.txt, rbi_guidelines.txt, and financial_planning.txt will appear here when context-matching queries are triggered.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. PLAN COMPARISON PAGE -->
+      <div id="tab-content-comparison" class="space-y-8 hidden">
+        <!-- Columns container -->
+        <div id="comparison-columns-container" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+      </div>
+
+      <!-- 5. PROFILE & GOALS PAGE -->
+      <div id="tab-content-profile" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
+        <!-- Details Card -->
+        <div class="p-6 rounded-xl border border-zinc-900 bg-zinc-900/10 backdrop-blur-sm space-y-6">
+          <div>
+            <h3 class="text-lg font-bold text-white">Financial Profile Details</h3>
+            <p class="text-xs text-zinc-550 mt-1">Configure your foundational cash-flows, current savings, and market expectations.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="text-xs font-semibold text-zinc-400 block">Monthly Net Income (₹)</label>
+              <div class="relative rounded-lg overflow-hidden border border-zinc-800 focus-within:border-zinc-700 bg-zinc-950/60 transition">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-600">
+                  <i data-lucide="indian-rupee" class="w-3.5 h-3.5"></i>
+                </div>
+                <input type="number" id="prof-income" onchange="updateProfileField('monthlyIncome', this.value)" class="w-full bg-transparent pl-8 pr-4 py-2.5 text-sm text-white focus:outline-none font-mono">
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-xs font-semibold text-zinc-400 block">Monthly Expenses (₹)</label>
+              <div class="relative rounded-lg overflow-hidden border border-zinc-800 focus-within:border-zinc-700 bg-zinc-950/60 transition">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-600">
+                  <i data-lucide="indian-rupee" class="w-3.5 h-3.5"></i>
+                </div>
+                <input type="number" id="prof-expenses" onchange="updateProfileField('monthlyExpenses', this.value)" class="w-full bg-transparent pl-8 pr-4 py-2.5 text-sm text-white focus:outline-none font-mono">
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-xs font-semibold text-zinc-400 block">Current Assets/Liquid Reserves (₹)</label>
+              <div class="relative rounded-lg overflow-hidden border border-zinc-800 focus-within:border-zinc-700 bg-zinc-950/60 transition">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-600">
+                  <i data-lucide="indian-rupee" class="w-3.5 h-3.5"></i>
+                </div>
+                <input type="number" id="prof-assets" onchange="updateProfileField('currentAssets', this.value)" class="w-full bg-transparent pl-8 pr-4 py-2.5 text-sm text-white focus:outline-none font-mono">
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-xs font-semibold text-zinc-400 block">Expected Return Rate (% p.a.)</label>
+              <div class="relative rounded-lg overflow-hidden border border-zinc-800 focus-within:border-zinc-700 bg-zinc-950/60 transition">
+                <input type="number" step="0.1" id="prof-returns" onchange="updateProfileField('expectedReturn', this.value)" class="w-full bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none font-mono">
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-zinc-650 text-xs font-mono">%</div>
+              </div>
+            </div>
+
+            <div class="space-y-2 sm:col-span-2">
+              <label class="text-xs font-semibold text-zinc-400 block">Base Inflation Rate (% p.a.)</label>
+              <div class="relative rounded-lg overflow-hidden border border-zinc-800 focus-within:border-zinc-700 bg-zinc-950/60 transition">
+                <input type="number" step="0.1" id="prof-inflation" onchange="updateProfileField('inflationRate', this.value)" class="w-full bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none font-mono">
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-zinc-650 text-xs font-mono">%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom card breakdown -->
+          <div class="p-4 rounded-lg bg-zinc-900 border border-zinc-800 flex justify-between items-center text-xs">
+            <div>
+              <span class="text-zinc-550 font-medium">Monthly Savings Margin:</span>
+              <span id="prof-card-savings-margin" class="ml-2 font-semibold text-white font-mono">₹0</span>
+            </div>
+            <div>
+              <span class="text-zinc-550 font-medium">Savings Rate:</span>
+              <span id="prof-card-savings-rate" class="ml-2 font-semibold text-emerald-400 font-mono">0%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Target Goals Card -->
+        <div class="p-6 rounded-xl border border-zinc-900 bg-zinc-900/10 backdrop-blur-sm flex flex-col justify-between gap-6">
+          <div class="space-y-6">
+            <div>
+              <h3 class="text-lg font-bold text-white">Financial Target Goals</h3>
+              <p class="text-xs text-zinc-550 mt-1">Add specific future expenses that require funding (e.g. buying a house, retirement).</p>
+            </div>
+
+            <!-- Form -->
+            <form onsubmit="handleFormAddGoal(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-zinc-900 pb-6">
+              <div class="sm:col-span-2 space-y-1.5">
+                <label class="text-[10px] font-mono tracking-wider uppercase text-zinc-550">Goal Description</label>
+                <input type="text" id="goal-name-input" required placeholder="e.g. Apartment Down Payment" class="w-full rounded-lg border border-zinc-850 bg-zinc-950/60 px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-700 placeholder-zinc-700">
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-mono tracking-wider uppercase text-zinc-550">Target Amount (₹)</label>
+                <div class="relative rounded-lg overflow-hidden border border-zinc-855 bg-zinc-950/60 focus-within:border-zinc-700">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-650">
+                    <i data-lucide="indian-rupee" class="w-3 h-3"></i>
+                  </div>
+                  <input type="number" id="goal-amount-input" required placeholder="1500000" class="w-full bg-transparent pl-8 pr-3 py-2 text-xs text-white focus:outline-none font-mono">
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-mono tracking-wider uppercase text-zinc-550">Target Year</label>
+                <div class="relative rounded-lg overflow-hidden border border-zinc-855 bg-zinc-950/60 focus-within:border-zinc-700">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-650">
+                    <i data-lucide="calendar" class="w-3 h-3"></i>
+                  </div>
+                  <input type="number" id="goal-year-input" required class="w-full bg-transparent pl-8 pr-3 py-2 text-xs text-white focus:outline-none font-mono">
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-mono tracking-wider uppercase text-zinc-555">Priority Level</label>
+                <select id="goal-priority-input" class="w-full rounded-lg border border-zinc-850 bg-zinc-950 px-3 py-2 text-xs text-zinc-400 focus:outline-none focus:border-zinc-700 focus:text-white">
+                  <option value="High">High (Retirement, Health)</option>
+                  <option value="Medium" selected>Medium (House, Education)</option>
+                  <option value="Low">Low (Vacation, Luxury)</option>
+                </select>
+              </div>
+
+              <div class="flex items-end">
+                <button type="submit" class="w-full py-2 bg-white text-black hover:bg-zinc-200 font-semibold rounded-lg text-xs flex justify-center items-center gap-1.5 transition shadow-sm h-[34px]">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>Add Goal</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Goals list output -->
+            <div id="profile-goals-list" class="space-y-3 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Footer -->
+    <footer class="w-full bg-zinc-950 border-t border-zinc-900 py-6 px-6 text-center text-[10px] text-zinc-650">
+      <div class="w-full max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+        <span>© 2026 FinSight 360. Compiled with HTML5, Tailwind CSS, and custom SVGs.</span>
+        <span>SEC Sandbox compliance simulation index: #44B-902B-EF9</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. FINANCIAL SIMULATOR ALGORITHMS & GRAPH PLOTTERS                        -->
+  <!-- ========================================================================= -->
+  <script>
+    // State management
+    let state = {
+      isLaunched: false,
+      activeTab: 'overview',
+      profile: {
+        monthlyIncome: 120000,
+        monthlyExpenses: 70000,
+        currentAssets: 500000,
+        expectedReturn: 12,
+        inflationRate: 6
+      },
+      goals: [
+        { id: '1', name: 'Apartment Down Payment', targetAmount: 1500000, targetYear: new Date().getFullYear() + 5, priority: 'Medium' },
+        { id: '2', name: "Child's Higher Education", targetAmount: 1200000, targetYear: new Date().getFullYear() + 15, priority: 'Medium' },
+        { id: '3', name: 'Retirement Corpus', targetAmount: 25000000, targetYear: new Date().getFullYear() + 25, priority: 'High' }
+      ],
+      simulation: {
+        jobLossMonths: 0,
+        salaryHikePercent: 0,
+        marketCrashPercent: 0,
+        inflationSpikePercent: 0
+      },
+      chat: [
+        { sender: 'assistant', text: 'Hello! I am your FinSight 360 AI Assistant. I can help analyze your goals, run optimizations, and answer questions backed by standard financial documents (SEBI, RBI guides, and the 50/30/20 rule). What financial questions can I help you answer today?' }
+      ]
+    };
+
+    // Load state from localStorage on init
+    function loadState() {
+      const p = localStorage.getItem('fs360_profile');
+      const g = localStorage.getItem('fs360_goals');
+      const l = localStorage.getItem('fs360_launched');
+      if (p) state.profile = JSON.parse(p);
+      if (g) state.goals = JSON.parse(g);
+      if (l === 'true') {
+        state.isLaunched = true;
+        document.getElementById('landing-view').classList.add('hidden');
+        document.getElementById('app-view').classList.remove('hidden');
+      }
+      
+      // Update form inputs
+      document.getElementById('prof-income').value = state.profile.monthlyIncome;
+      document.getElementById('prof-expenses').value = state.profile.monthlyExpenses;
+      document.getElementById('prof-assets').value = state.profile.currentAssets;
+      document.getElementById('prof-returns').value = state.profile.expectedReturn;
+      document.getElementById('prof-inflation').value = state.profile.inflationRate;
+      
+      document.getElementById('goal-year-input').value = new Date().getFullYear() + 5;
+      
+      recalculateAndRedraw();
+    }
+
+    function saveState() {
+      localStorage.setItem('fs360_profile', JSON.stringify(state.profile));
+      localStorage.setItem('fs360_goals', JSON.stringify(state.goals));
+    }
+
+    function launchApp() {
+      state.isLaunched = true;
+      localStorage.setItem('fs360_launched', 'true');
+      document.getElementById('landing-view').classList.add('hidden');
+      document.getElementById('app-view').classList.remove('hidden');
+      recalculateAndRedraw();
+    }
+
+    function logoutApp() {
+      state.isLaunched = false;
+      localStorage.removeItem('fs360_launched');
+      document.getElementById('app-view').classList.add('hidden');
+      document.getElementById('landing-view').classList.remove('hidden');
+    }
+
+    function setActiveTab(tabId) {
+      state.activeTab = tabId;
+      
+      // Toggle visibility
+      ['overview', 'simulator', 'chat', 'comparison', 'profile'].forEach(t => {
+        const content = document.getElementById(`tab-content-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        
+        if (t === tabId) {
+          content.classList.remove('hidden');
+          btn.classList.add('bg-zinc-850', 'text-white');
+          btn.classList.remove('text-zinc-400');
+          // Update icon color
+          btn.querySelector('i').className.baseVal = btn.querySelector('i').className.baseVal.replace('text-zinc-500', 'text-emerald-400');
+        } else {
+          content.classList.add('hidden');
+          btn.classList.remove('bg-zinc-850', 'text-white');
+          btn.classList.add('text-zinc-400');
+          // Revert icon color
+          btn.querySelector('i').className.baseVal = btn.querySelector('i').className.baseVal.replace('text-emerald-400', 'text-zinc-500');
+        }
+      });
+      
+      recalculateAndRedraw();
+    }
+
+    // Projections logic
+    function getProjections() {
+      const years = 30;
+      const points = [];
+      const currentYear = new Date().getFullYear();
+      
+      let assetsA = state.profile.currentAssets * (1 - state.simulation.marketCrashPercent / 100);
+      let assetsB = assetsA;
+      let assetsC = assetsA;
+      
+      const rateA = state.profile.expectedReturn / 100;
+      const inflation = (state.profile.inflationRate + state.simulation.inflationSpikePercent) / 100;
+      
+      const income = state.profile.monthlyIncome * (1 + state.simulation.salaryHikePercent / 100);
+      const expenses = state.profile.monthlyExpenses;
+      
+      const extraSavingsC = state.profile.monthlyIncome * 0.15;
+      
+      // Delayed goal offsets for Plan B
+      const getDelayedYearOffset = (goal) => {
+        if (goal.priority === 'High') return 0;
+        if (goal.priority === 'Medium') return 2;
+        return 4;
+      };
+
+      for (let y = 0; y <= years; y++) {
+        const yr = currentYear + y;
+        
+        // Compute contributions
+        let savingsRateA = Math.max(0, income - expenses);
+        let contribA = savingsRateA * 12;
+        if (y === 0 && state.simulation.jobLossMonths > 0) {
+          const monthsEmployed = Math.max(0, 12 - state.simulation.jobLossMonths);
+          contribA = Math.max(-assetsA, (income * monthsEmployed) - (expenses * 12));
+        }
+        
+        let contribB = contribA;
+        
+        let contribC = (savingsRateA + extraSavingsC) * 12;
+        if (y === 0 && state.simulation.jobLossMonths > 0) {
+          const monthsEmployed = Math.max(0, 12 - state.simulation.jobLossMonths);
+          contribC = Math.max(-assetsC, ((income + extraSavingsC) * monthsEmployed) - (expenses * 12));
+        }
+        
+        // Compound
+        assetsA = assetsA * (1 + rateA) + contribA;
+        assetsB = assetsB * (1 + rateA) + contribB;
+        assetsC = assetsC * (1 + rateA) + contribC;
+        
+        // Goal withdrawals
+        let drainA = 0;
+        let drainB = 0;
+        let drainC = 0;
+        
+        state.goals.forEach(g => {
+          const goalOffset = g.targetYear - currentYear;
+          const cost = g.targetAmount * Math.pow(1 + inflation, goalOffset);
+          
+          if (goalOffset === y) {
+            drainA += cost;
+            drainC += cost;
+          }
+          
+          const delayedOffset = goalOffset + getDelayedYearOffset(g);
+          if (delayedOffset === y) {
+            drainB += cost;
+          }
+        });
+        
+        assetsA = Math.max(0, assetsA - drainA);
+        assetsB = Math.max(0, assetsB - drainB);
+        assetsC = Math.max(0, assetsC - drainC);
+        
+        const safetyBuffer = expenses * 3;
+        const hasConflict = (assetsA < safetyBuffer) && (drainA > 0);
+        
+        points.push({
+          yearOffset: y,
+          year: yr,
+          planAWealth: Math.round(assetsA),
+          planBWealth: Math.round(assetsB),
+          planCWealth: Math.round(assetsC),
+          goalsTargetAmount: drainA,
+          conflicts: hasConflict
+        });
+      }
+      return points;
+    }
+
+    // Optimization Logic
+    function getOptimization(projections) {
+      const last = projections[projections.length - 1];
+      const conflictsList = [];
+      let isAFeasible = true;
+      const expenses = state.profile.monthlyExpenses;
+
+      state.goals.forEach(goal => {
+        const yearIdx = goal.targetYear - new Date().getFullYear();
+        if (yearIdx >= 0 && yearIdx < projections.length) {
+          const pt = projections[yearIdx];
+          if (pt.planAWealth < expenses * 3) {
+            conflictsList.push(`Goal "${goal.name}" in ${goal.targetYear} is at risk (reserves: ₹${pt.planAWealth.toLocaleString('en-IN')})`);
+            if (goal.priority === 'High') isAFeasible = false;
+          }
+        }
+      });
+
+      const isBFeasible = last.planBWealth > expenses * 6;
+      const isCFeasible = last.planCWealth > expenses * 6;
+
+      let maxDeficit = 0;
+      projections.forEach(pt => {
+        const buffer = expenses * 6;
+        if (pt.planAWealth < buffer) {
+          const deficit = buffer - pt.planAWealth;
+          if (deficit > maxDeficit) maxDeficit = deficit;
+        }
+      });
+      const monthlySavingsRequired = Math.round(maxDeficit / 360);
+
+      return {
+        planA: {
+          finalWealth: last.planAWealth,
+          feasible: isAFeasible && conflictsList.length === 0,
+          conflictsList,
+          monthlySavingsRequired
+        },
+        planB: {
+          finalWealth: last.planBWealth,
+          feasible: isBFeasible,
+          delayedGoals: state.goals.filter(g => g.priority !== 'High')
+        },
+        planC: {
+          finalWealth: last.planCWealth,
+          feasible: isCFeasible,
+          recommendedSavings: Math.round(state.profile.monthlyIncome * 0.15),
+          recommendedExpenseCut: Math.round(state.profile.monthlyExpenses * 0.1)
+        }
+      };
+    }
+
+    // Format Rupee Lakhs/Crores
+    function formatCurrency(val) {
+      return '₹' + new Intl.NumberFormat('en-IN', {
+        maximumFractionDigits: 0
+      }).format(val);
+    }
+
+    function formatShortCurrency(val) {
+      if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)}Cr`;
+      if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;
+      if (val >= 1000) return `₹${(val / 1000).toFixed(0)}k`;
+      return `₹${val}`;
+    }
+
+    // Chart Renderer
+    function drawChart(containerId, projections) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      const padding = { top: 30, right: 30, bottom: 40, left: 65 };
+      const width = 800;
+      const height = 300;
+      const chartWidth = width - padding.left - padding.right;
+      const chartHeight = height - padding.top - padding.bottom;
+
+      const maxVal = Math.max(
+        ...projections.map(p => Math.max(p.planAWealth, p.planBWealth, p.planCWealth)),
+        10000
+      );
+
+      const getCoordinates = (index, val) => {
+        const x = padding.left + (index / (projections.length - 1)) * chartWidth;
+        const y = padding.top + chartHeight - (val / maxVal) * chartHeight;
+        return { x, y };
+      };
+
+      const getLinePath = (key) => {
+        return projections.reduce((path, pt, idx) => {
+          const { x, y } = getCoordinates(idx, pt[key]);
+          return path + `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
+        }, '');
+      };
+
+      const getAreaPath = (key) => {
+        const lp = getLinePath(key);
+        if (!lp) return '';
+        const first = getCoordinates(0, projections[0][key]);
+        const last = getCoordinates(projections.length - 1, projections[projections.length - 1][key]);
+        return `${lp} L ${last.x} ${padding.top + chartHeight} L ${first.x} ${padding.top + chartHeight} Z`;
+      };
+
+      const pathA = getLinePath('planAWealth');
+      const pathB = getLinePath('planBWealth');
+      const pathC = getLinePath('planCWealth');
+
+      const areaA = getAreaPath('planAWealth');
+      const areaB = getAreaPath('planBWealth');
+      const areaC = getAreaPath('planCWealth');
+
+      const yTicks = [0, maxVal * 0.25, maxVal * 0.5, maxVal * 0.75, maxVal];
+
+      // Draw Grid Line SVG
+      let gridSvg = '';
+      yTicks.forEach(tick => {
+        const y = padding.top + chartHeight - (tick / maxVal) * chartHeight;
+        gridSvg += `
+          <g class="opacity-10">
+            <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="#3f3f46" stroke-width="1" stroke-dasharray="4 4" />
+            <text x="${padding.left - 10}" y="${y + 3}" fill="#a1a1aa" font-size="9" font-family="monospace" text-anchor="end">${formatShortCurrency(tick)}</text>
+          </g>
+        `;
+      });
+
+      // Draw Conflict overlays
+      let conflictOverlays = '';
+      projections.forEach((pt, idx) => {
+        if (pt.conflicts) {
+          const xStart = padding.left + (idx / (projections.length - 1)) * chartWidth;
+          const nextIdx = Math.min(projections.length - 1, idx + 1);
+          const xEnd = padding.left + (nextIdx / (projections.length - 1)) * chartWidth;
+          conflictOverlays += `
+            <rect x="${xStart}" y="${padding.top}" width="${Math.max(1.5, xEnd - xStart)}" height="${chartHeight}" fill="#f43f5e" opacity="0.12" />
+          `;
+        }
+      });
+
+      // Draw X Axis labels
+      let xAxisSvg = '';
+      projections.forEach((pt, idx) => {
+        if (idx % 5 === 0 || idx === projections.length - 1) {
+          const x = padding.left + (idx / (projections.length - 1)) * chartWidth;
+          xAxisSvg += `
+            <g class="opacity-40">
+              <line x1="${x}" y1="${padding.top + chartHeight}" x2="${x}" y2="${padding.top + chartHeight + 4}" stroke="#3f3f46" stroke-width="1" />
+              <text x="${x}" y="${padding.top + chartHeight + 15}" fill="#a1a1aa" font-size="9" font-family="monospace" text-anchor="middle">Yr ${idx}</text>
+            </g>
+          `;
+        }
+      });
+
+      // Draw goal markers
+      let goalMarkers = '';
+      projections.forEach((pt, idx) => {
+        if (pt.goalsTargetAmount > 0) {
+          const { x, y } = getCoordinates(idx, pt.planAWealth);
+          goalMarkers += `
+            <g class="cursor-pointer group">
+              <line x1="${x}" y1="${padding.top}" x2="${x}" y2="${padding.top + chartHeight}" stroke="${pt.conflicts ? '#ef4444' : '#52525b'}" stroke-width="1.5" stroke-dasharray="2 2" />
+              <circle cx="${x}" cy="${y}" r="5" fill="${pt.conflicts ? '#f43f5e' : '#34d399'}" stroke="#09090b" stroke-width="2" />
+            </g>
+          `;
+        }
+      });
+
+      const hasConflicts = projections.some(pt => pt.conflicts);
+
+      container.innerHTML = `
+        <div class="p-6 rounded-xl border border-zinc-900 bg-[#0c0c0e] space-y-6 shadow-2xl relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 rounded-full bg-emerald-500/5 blur-[50px] pointer-events-none"></div>
+          <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+            <div>
+              <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Asset Projection Model</span>
+              <h3 class="text-lg font-bold text-white mt-0.5">30-Year Wealth Trajectory Comparison</h3>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-4 text-[10px] font-mono text-zinc-400">
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-0.5 bg-zinc-300 inline-block"></span><span>Plan A (Current)</span></div>
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-0.5 bg-amber-500 inline-block"></span><span>Plan B (Delayed Goals)</span></div>
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-0.5 bg-emerald-400 inline-block"></span><span>Plan C (Optimized Savings)</span></div>
+            </div>
+          </div>
+
+          <div class="relative w-full overflow-hidden">
+            <svg viewBox="0 0 ${width} ${height}" class="w-full h-auto overflow-visible select-none">
+              <defs>
+                <linearGradient id="gradA" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fafafa" stop-opacity="0.08" /><stop offset="100%" stop-color="#fafafa" stop-opacity="0" /></linearGradient>
+                <linearGradient id="gradB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f59e0b" stop-opacity="0.08" /><stop offset="100%" stop-color="#f59e0b" stop-opacity="0" /></linearGradient>
+                <linearGradient id="gradC" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10b981" stop-opacity="0.08" /><stop offset="100%" stop-color="#10b981" stop-opacity="0" /></linearGradient>
+              </defs>
+              ${gridSvg}
+              ${conflictOverlays}
+              ${xAxisSvg}
+              <path d="${areaA}" fill="url(#gradA)" />
+              <path d="${areaB}" fill="url(#gradB)" />
+              <path d="${areaC}" fill="url(#gradC)" />
+              <path d="${pathA}" fill="none" stroke="#e4e4e7" stroke-width="2" stroke-linecap="round" />
+              <path d="${pathB}" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" />
+              <path d="${pathC}" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" />
+              ${goalMarkers}
+            </svg>
+          </div>
+
+          ${hasConflicts ? `
+            <div class="p-4 rounded-lg bg-rose-950/20 border border-rose-900/50 flex gap-3 text-xs text-rose-350">
+              <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 text-rose-450 mt-0.5"></i>
+              <div class="space-y-1">
+                <span class="font-semibold block">Goal Overlap Cash Depletion Warnings</span>
+                <p class="text-[11px] leading-relaxed text-rose-450">
+                  The red background regions indicate critical intervals where overlapping high-priority target goal withdrawals cause cash reserves to dip below your safety margins. View Plan Comparison to see how optimizations resolve these.
+                </p>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+      // Re-init lucide icons inside chart
+      lucide.createIcons();
+    }
+
+    // Render comparison tab content
+    function drawComparisonColumns(optimization) {
+      const container = document.getElementById('comparison-columns-container');
+      if (!container) return;
+
+      const { planA, planB, planC } = optimization;
+
+      container.innerHTML = `
+        <!-- Plan A -->
+        <div class="p-6 rounded-xl border flex flex-col justify-between space-y-6 bg-zinc-950/20 ${planA.feasible ? 'border-zinc-900' : 'border-rose-900/50 relative shadow-[0_0_15px_rgba(244,63,94,0.03)]'}">
+          ${!planA.feasible ? `<div class="absolute top-0 right-6 -translate-y-1/2 px-2.5 py-0.5 rounded-full border border-rose-800 bg-rose-950 text-rose-400 text-[8px] font-mono uppercase tracking-wider font-semibold">Conflicts Warning</div>` : ''}
+          <div class="space-y-4">
+            <div>
+              <h4 class="font-bold text-sm text-white">Plan A: Current Habit Path</h4>
+              <p class="text-[11px] text-zinc-550 mt-1">Maintain current income, expenditures, and goal timelines.</p>
+            </div>
+            <div class="space-y-1.5 border-y border-zinc-900 py-4">
+              <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Projected Ending Assets</span>
+              <span class="text-2xl font-bold text-white font-mono">${formatCurrency(planA.finalWealth)}</span>
+            </div>
+            <div class="space-y-2">
+              <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Feasibility Status</span>
+              <div class="flex items-center gap-2 text-xs">
+                ${planA.feasible ? `
+                  <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                  <span class="text-emerald-400 font-medium">Fully Feasible</span>
+                ` : `
+                  <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500 shrink-0"></i>
+                  <span class="text-rose-450 font-medium">Underfunded / Conflicts</span>
+                `}
+              </div>
+            </div>
+            ${!planA.feasible && planA.conflictsList.length > 0 ? `
+              <div class="space-y-2 pt-2">
+                <span class="text-[9px] font-mono text-zinc-550 uppercase tracking-wider block">Deficit Summary</span>
+                <ul class="space-y-1.5">
+                  ${planA.conflictsList.map(c => `<li class="text-[10px] text-rose-350 leading-relaxed list-disc list-inside">${c}</li>`).join('')}
+                </ul>
+              </div>
+            ` : ''}
+          </div>
+          <div class="pt-4 border-t border-zinc-900">
+            ${planA.feasible ? `
+              <p class="text-[10px] text-zinc-550 leading-relaxed font-sans">You are currently tracking to fund all goals comfortably within your budget margin.</p>
+            ` : `
+              <div class="p-3 rounded bg-rose-950/20 border border-rose-900/30 text-[10px] text-rose-350 leading-relaxed space-y-1">
+                <span class="font-bold">Required Additional Action:</span>
+                <p>Increase monthly savings by <strong class="font-mono text-white">${formatCurrency(planA.monthlySavingsRequired)}</strong> to clear all goal conflicts.</p>
+              </div>
+            `}
+          </div>
+        </div>
+
+        <!-- Plan B -->
+        <div class="p-6 rounded-xl border border-zinc-900 bg-zinc-950/20 flex flex-col justify-between space-y-6">
+          <div class="space-y-4">
+            <div>
+              <h4 class="font-bold text-sm text-white">Plan B: Adjusted Timelines</h4>
+              <p class="text-[11px] text-zinc-555 mt-1">Delay lower-priority target goals by a few years to optimize cash reserves.</p>
+            </div>
+            <div class="space-y-1.5 border-y border-zinc-900 py-4">
+              <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Projected Ending Assets</span>
+              <span class="text-2xl font-bold text-white font-mono">${formatCurrency(planB.finalWealth)}</span>
+            </div>
+            <div class="space-y-2">
+              <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Feasibility Status</span>
+              <div class="flex items-center gap-2 text-xs">
+                ${planB.feasible ? `
+                  <i data-lucide="check-circle" class="w-4 h-4 text-amber-400 shrink-0"></i>
+                  <span class="text-amber-450 font-medium">Feasible via Timeline Shifts</span>
+                ` : `
+                  <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500 shrink-0"></i>
+                  <span class="text-rose-450 font-medium">Underfunded</span>
+                `}
+              </div>
+            </div>
+            ${planB.delayedGoals.length > 0 ? `
+              <div class="space-y-2 pt-2">
+                <span class="text-[9px] font-mono text-zinc-550 uppercase tracking-wider block">Timeline Adjustments</span>
+                <div class="flex flex-col gap-1.5">
+                  ${planB.delayedGoals.map(g => `
+                    <div class="flex justify-between text-[10px] text-zinc-400 font-mono">
+                      <span>${g.name}</span>
+                      <span class="text-amber-500">+${g.priority === 'Medium' ? '2' : '4'} Years</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+          <div class="pt-4 border-t border-zinc-900">
+            <p class="text-[10px] text-zinc-555 leading-relaxed font-sans">
+              By delaying lower-priority goals (Medium: 2 yrs, Low: 4 yrs), you reduce immediate cash drains and keep high-priority goals fully secured.
+            </p>
+          </div>
+        </div>
+
+        <!-- Plan C -->
+        <div class="p-6 rounded-xl border-2 border-emerald-500/50 bg-[#0c0c0e] flex flex-col justify-between space-y-6 relative shadow-[0_0_20px_rgba(16,185,129,0.05)]">
+          <div class="absolute top-0 right-6 -translate-y-1/2 px-2.5 py-0.5 rounded-full border border-emerald-500 bg-emerald-500 text-black text-[8px] font-mono uppercase tracking-wider font-semibold">Recommended Plan</div>
+          <div class="space-y-4">
+            <div>
+              <h4 class="font-bold text-sm text-white">Plan C: Accelerated Savings</h4>
+              <p class="text-[11px] text-zinc-550 mt-1">Accelerate savings rate to hit original timelines without goal delays.</p>
+            </div>
+            <div class="space-y-1.5 border-y border-zinc-900 py-4">
+              <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Projected Ending Assets</span>
+              <span class="text-2xl font-bold text-emerald-400 font-mono">${formatCurrency(planC.finalWealth)}</span>
+            </div>
+            <div class="space-y-2">
+              <span class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Feasibility Status</span>
+              <div class="flex items-center gap-2 text-xs">
+                <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span class="text-emerald-400 font-medium">Fully Feasible & Optimized</span>
+              </div>
+            </div>
+            <div class="space-y-3 pt-2">
+              <span class="text-[9px] font-mono text-zinc-550 uppercase tracking-wider block">Recommendation Actions</span>
+              <div class="space-y-2 text-[10px] text-zinc-400">
+                <div class="flex justify-between items-center bg-zinc-900 p-2 rounded border border-zinc-800/80">
+                  <span>Additional Savings Target</span>
+                  <span class="font-mono text-emerald-450 font-semibold">+${formatCurrency(planC.recommendedSavings)}/mo</span>
+                </div>
+                <div class="flex justify-between items-center bg-zinc-900 p-2 rounded border border-zinc-800/80">
+                  <span>Discretionary Expense Cut</span>
+                  <span class="font-mono text-white font-semibold">-${formatCurrency(planC.recommendedExpenseCut)}/mo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-zinc-900">
+            <p class="text-[10px] text-zinc-550 leading-relaxed font-sans">
+              Increases monthly savings by 15% through discretionary budget trims. This generates significantly higher compounding, leaving you with larger ending net worth reserves.
+            </p>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    // General state updater and redraw
+    function recalculateAndRedraw() {
+      const projections = getProjections();
+      const optimization = getOptimization(projections);
+      
+      const last = projections[projections.length - 1];
+      const monthlySavingsVal = Math.max(0, state.profile.monthlyIncome - state.profile.monthlyExpenses);
+      
+      // Update Top Status Bar
+      document.getElementById('status-savings').innerText = `Current Savings: ${formatCurrency(monthlySavingsVal)}/mo`;
+      const bufferVal = state.profile.monthlyExpenses > 0 ? (state.profile.currentAssets / state.profile.monthlyExpenses).toFixed(1) : '0';
+      document.getElementById('status-buffer').innerText = `Buffer: ${bufferVal} Months`;
+
+      // Update Badge
+      const hasConflicts = projections.some(pt => pt.conflicts);
+      const badgeContainer = document.getElementById('status-badge-container');
+      if (hasConflicts) {
+        badgeContainer.innerHTML = `
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-950/30 border border-rose-900/50 text-[10px] font-mono text-rose-400">
+            <i data-lucide="shield-alert" class="w-3.5 h-3.5 animate-pulse"></i>
+            <span>Goal Conflicts Detected</span>
+          </div>
+        `;
+      } else {
+        badgeContainer.innerHTML = `
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/30 border border-emerald-900/50 text-[10px] font-mono text-emerald-400">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Financial Plan Feasible</span>
+          </div>
+        `;
+      }
+
+      // Update Profile settings card footer
+      document.getElementById('prof-card-savings-margin').innerText = formatCurrency(monthlySavingsVal);
+      const savingsRatePercent = state.profile.monthlyIncome > 0 ? Math.round((monthlySavingsVal / state.profile.monthlyIncome) * 100) : 0;
+      document.getElementById('prof-card-savings-rate').innerText = `${savingsRatePercent}%`;
+
+      // Overview Tab Cards
+      if (state.activeTab === 'overview') {
+        document.getElementById('card-ending-wealth').innerText = formatCurrency(last.planAWealth);
+        document.getElementById('card-ending-desc').innerText = `Target with expected return of ${state.profile.expectedReturn}%`;
+        document.getElementById('card-savings-rate').innerText = formatCurrency(monthlySavingsVal);
+        document.getElementById('card-savings-desc').innerText = `Savings rate of ${savingsRatePercent}% of income`;
+        
+        document.getElementById('card-buffer-months').innerText = `${bufferVal} Months`;
+        document.getElementById('card-buffer-months').className = `text-2xl font-bold font-mono ${Number(bufferVal) >= 6 ? 'text-emerald-400' : Number(bufferVal) >= 3 ? 'text-amber-500' : 'text-rose-500'}`;
+        document.getElementById('card-buffer-desc').innerText = `Recommended buffer is 6.0 Months (₹${(state.profile.monthlyExpenses * 6).toLocaleString('en-IN')})`;
+
+        const successCount = state.goals.filter(g => {
+          const yearIdx = g.targetYear - new Date().getFullYear();
+          if (yearIdx >= 0 && yearIdx < projections.length) {
+            return projections[yearIdx].planAWealth >= state.profile.monthlyExpenses * 3;
+          }
+          return false;
+        }).length;
+        const successRate = state.goals.length > 0 ? Math.round((successCount / state.goals.length) * 100) : 100;
+        document.getElementById('card-feasibility-index').innerText = `${successRate}%`;
+        document.getElementById('card-feasibility-index').className = `text-2xl font-bold font-mono ${successRate === 100 ? 'text-emerald-400' : 'text-amber-500'}`;
+        document.getElementById('card-feasibility-desc').innerText = `Checks funding safety for ${state.goals.length} target goals`;
+
+        drawChart('overview-chart-panel', projections);
+      }
+
+      // Simulator Tab
+      if (state.activeTab === 'simulator') {
+        drawChart('simulator-chart-panel', projections);
+        
+        // Update alert banner
+        const isDrained = state.simulation.jobLossMonths * state.profile.monthlyExpenses > state.profile.monthlyIncome * (12 - state.simulation.jobLossMonths);
+        const simAlert = document.getElementById('sim-alert-banner');
+        if (state.simulation.jobLossMonths > 0 || state.simulation.marketCrashPercent > 0 || state.simulation.inflationSpikePercent > 0) {
+          simAlert.innerHTML = `
+            <div class="p-4 rounded-lg flex gap-3 text-xs ${isDrained ? 'bg-rose-950/20 border border-rose-900/50 text-rose-350' : 'bg-amber-950/20 border border-amber-900/50 text-amber-350'}">
+              <i data-lucide="${isDrained ? 'shield-alert' : 'alert-triangle'}" class="w-4 h-4 shrink-0 mt-0.5 ${isDrained ? 'text-rose-400' : 'text-amber-400'}"></i>
+              <div class="space-y-1">
+                <span class="font-semibold block">${isDrained ? 'Critical Scenario Stress Level' : 'Moderate Stress Scenario Triggered'}</span>
+                <p class="text-[11px] leading-relaxed text-zinc-400">
+                  ${state.simulation.jobLossMonths > 0 ? `Layoff of ${state.simulation.jobLossMonths} months will drain ₹${(state.simulation.jobLossMonths * state.profile.monthlyExpenses).toLocaleString('en-IN')} in cash. ` : ''}
+                  ${state.simulation.marketCrashPercent > 0 ? `Starting assets drops by ${state.simulation.marketCrashPercent}% due to portfolio crash. ` : ''}
+                  ${state.simulation.inflationSpikePercent > 0 ? `Compounding inflation spikes to ${state.profile.inflationRate + state.simulation.inflationSpikePercent}% p.a. requiring significantly larger final targets.` : ''}
+                </p>
+              </div>
+            </div>
+          `;
+        } else {
+          simAlert.innerHTML = `
+            <div class="p-4 rounded-lg bg-emerald-950/20 border border-emerald-900/50 text-emerald-350 flex gap-3 text-xs">
+              <i data-lucide="shield-check" class="w-4 h-4 shrink-0 mt-0.5 text-emerald-400"></i>
+              <div class="space-y-1">
+                <span class="font-semibold block">Baseline Simulation Active</span>
+                <p class="text-[11px] leading-relaxed text-zinc-400">All parameters are running at default indices. Drag the sliders above to stress-test your plans.</p>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      // Comparison Tab
+      if (state.activeTab === 'comparison') {
+        drawComparisonColumns(optimization);
+      }
+
+      // Profile & Goals Tab
+      if (state.activeTab === 'profile') {
+        const goalsList = document.getElementById('profile-goals-list');
+        if (state.goals.length === 0) {
+          goalsList.innerHTML = `
+            <div class="text-center py-6 text-zinc-600 text-xs flex flex-col items-center gap-2">
+              <i data-lucide="alert-circle" class="w-5 h-5 text-zinc-750"></i>
+              <span>No financial goals defined yet.</span>
+            </div>
+          `;
+        } else {
+          goalsList.innerHTML = state.goals.map(g => `
+            <div class="flex justify-between items-center p-3 rounded-lg bg-zinc-950/40 border border-zinc-900 hover:border-zinc-850 transition">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-semibold text-xs text-white">${g.name}</span>
+                  <span class="px-1.5 py-0.5 rounded text-[8px] font-mono uppercase tracking-wider font-semibold ${g.priority === 'High' ? 'bg-rose-950/50 text-rose-400 border border-rose-900/30' : g.priority === 'Medium' ? 'bg-amber-950/50 text-amber-400 border border-amber-900/30' : 'bg-zinc-900 text-zinc-400 border border-zinc-800'}">${g.priority}</span>
+                </div>
+                <div class="text-[10px] font-mono text-zinc-500 mt-1">Target: ${formatCurrency(g.targetAmount)} in ${g.targetYear}</div>
+              </div>
+              <button onclick="deleteGoal('${g.id}')" class="p-1.5 text-zinc-650 hover:text-rose-400 hover:bg-zinc-900 rounded transition">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          `).join('');
+        }
+      }
+
+      lucide.createIcons();
+    }
+
+    // Profile input hooks
+    function updateProfileField(field, val) {
+      state.profile[field] = Number(val);
+      saveState();
+      recalculateAndRedraw();
+    }
+
+    // Goals CRUD hooks
+    function handleFormAddGoal(e) {
+      e.preventDefault();
+      const name = document.getElementById('goal-name-input').value;
+      const amount = Number(document.getElementById('goal-amount-input').value);
+      const year = Number(document.getElementById('goal-year-input').value);
+      const priority = document.getElementById('goal-priority-input').value;
+
+      if (!name || !amount || !year) return;
+
+      const newGoal = {
+        id: Math.random().toString(36).substr(2, 9),
+        name,
+        targetAmount: amount,
+        targetYear: year,
+        priority
+      };
+
+      state.goals.push(newGoal);
+      saveState();
+      
+      // Reset inputs
+      document.getElementById('goal-name-input').value = '';
+      document.getElementById('goal-amount-input').value = '';
+      document.getElementById('goal-year-input').value = new Date().getFullYear() + 5;
+      
+      recalculateAndRedraw();
+    }
+
+    function deleteGoal(id) {
+      state.goals = state.goals.filter(g => g.id !== id);
+      saveState();
+      recalculateAndRedraw();
+    }
+
+    // Simulator input hooks
+    function updateSimValue(key, val) {
+      state.simulation[key] = Number(val);
+      
+      if (key === 'jobLossMonths') document.getElementById('val-job-loss').innerText = `${val} Months`;
+      if (key === 'salaryHikePercent') document.getElementById('val-salary-hike').innerText = `+${val}%`;
+      if (key === 'marketCrashPercent') document.getElementById('val-market-crash').innerText = `-${val}%`;
+      if (key === 'inflationSpikePercent') document.getElementById('val-inflation-spike').innerText = `+${val}% p.a.`;
+      
+      recalculateAndRedraw();
+    }
+
+    function resetSimulation() {
+      state.simulation = {
+        jobLossMonths: 0,
+        salaryHikePercent: 0,
+        marketCrashPercent: 0,
+        inflationSpikePercent: 0
+      };
+      
+      document.getElementById('sim-job-loss').value = 0;
+      document.getElementById('sim-salary-hike').value = 0;
+      document.getElementById('sim-market-crash').value = 0;
+      document.getElementById('sim-inflation-spike').value = 0;
+      
+      document.getElementById('val-job-loss').innerText = '0 Months';
+      document.getElementById('val-salary-hike').innerText = '+0%';
+      document.getElementById('val-market-crash').innerText = '-0%';
+      document.getElementById('val-inflation-spike').innerText = '+0% p.a.';
+      
+      recalculateAndRedraw();
+    }
+  </script>
+
+  <!-- ========================================================================= -->
+  <!-- 4. RAG CHAT BOT ADVISOR INTERACTIVE LOGIC                                 -->
+  <!-- ========================================================================= -->
+  <script>
+    const mockRAGBase = {
+      "can_achieve": {
+        answer: `Based on your profile, your monthly savings margin is **₹[margin]** ([rate]% of income). 
+
+You have **[goal_count] target goals** configured in your profile. 
+[goals_list]
+
+According to Indian Nifty 50 equity mutual fund historical averages (12% expected returns), high-priority goals require a secure liquid fund buffer. If layoffs or job disruptions occur (simulated in the simulator), your timeline will experience stress. We recommend implementing Plan B (timeline adjustments) or Plan C (Accelerated SIP route) to secure all target goals.`,
+        contexts: [
+          { source: "financial_planning.txt", text: "Goal Prioritization: High-priority goals must have guaranteed funds (e.g. liquid deposits or short term debt). Delaying discretionary low-priority goals (e.g. luxury purchases) is the safest method to cover critical shortfalls." }
+        ]
+      },
+      "emergency": {
+        answer: `According to RBI guidelines, an **Emergency Fund should cover 3 to 6 months of expenditures**.
+
+For your current profile, your monthly expenses are **₹[expenses]**. Therefore:
+* **Minimum Emergency Fund (3 months)**: **₹[buffer_3]**
+* **Recommended Emergency Fund (6 months)**: **₹[buffer_6]**
+
+Your current liquid assets are **₹[assets]**. This covers **[assets_coverage] months** of expenses. Your liquid buffer is currently [assets_evaluation]`,
+        contexts: [
+          { source: "rbi_guidelines.txt", text: "Liquidity Reserves: Households should maintain a buffer of high-liquidity financial assets (savings deposits, short-term treasury bills) equivalent to at least 90-180 days of non-discretionary expenses to handle employment pauses or health events." },
+          { source: "financial_planning.txt", text: "Emergency Reserves Rule: Under standard financial advice, the emergency reserve should be distinct from goal funds and placed in risk-free accounts (e.g., sweep deposits or liquid debt funds)." }
+        ]
+      },
+      "sebi": {
+        answer: `SEBI (Securities and Exchange Board of India) investor education guidelines recommend the following core principles:
+
+1. **Asset Allocation**: Align investments with your risk tolerance and goal horizon. Do not put short-term funds (needed in <3 years) into high-volatility equities.
+2. **Diversification**: Spread funds across index trackers, debt, and liquid reserves.
+3. **Product Labeling**: Look at the "Riskometer" (Low, Moderate, High, Very High) before investing in mutual fund schemes.
+4. **Regular Systematic Investment (SIP)**: Encourages rupee-cost averaging to build wealth over long periods.`,
+        contexts: [
+          { source: "sebi_investor_edu.txt", text: "Asset-Liability Alignment: Investors are advised to avoid mismatching assets and liabilities. Short-term objectives must not be linked to equity mutual funds due to capital volatility. Capital protection takes precedence for target dates under 36 months." },
+          { source: "sebi_investor_edu.txt", text: "Systematic Wealth Accumulation: A rupee-cost averaging method (SIP) helps smooth market entries. Always read the Scheme Information Document (SID) and verify compliance with SEBI licensing." }
+        ]
+      },
+      "budget_rule": {
+        answer: `The **50/30/20 rule** is a simple budgeting guideline that divides net monthly income:
+* **50% Needs**: Rent, EMI, utilities, groceries, and debt payments.
+* **30% Wants**: Dining out, entertainment, shopping, travel.
+* **20% Savings/Investing**: Retirement SIPs, goal assets, emergency funds.
+
+Applying this rule to your current income of **₹[income]**:
+* **Needs (Target: ₹[needs])**
+* **Wants (Target: ₹[wants])**
+* **Savings/Investing (Target: ₹[savings_target])**
+
+Currently, your monthly expenses are **₹[expenses]**, resulting in a monthly savings margin of **₹[margin]** ([rate]% of income). You are saving [savings_evaluation] the recommended 20% savings mark!`,
+        contexts: [
+          { source: "financial_planning.txt", text: "The 50/30/20 Allocation Standard: A baseline allocation tool dividing income post-tax. Allocating 20% to savings ensures consistent compounding and builds a safety net before funding discretionary lifestyle additions." }
+        ]
+      }
+    };
+
+    function appendMessage(sender, text) {
+      const logs = document.getElementById('chat-logs');
+      const isUser = sender === 'user';
+      const div = document.createElement('div');
+      div.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
+      div.innerHTML = `
+        <div class="max-w-[85%] rounded-xl px-4 py-2.5 text-xs leading-relaxed ${isUser ? 'bg-white text-black font-medium' : 'bg-zinc-900 border border-zinc-850 text-zinc-300'}">
+          <div class="whitespace-pre-line">${text}</div>
+        </div>
+      `;
+      logs.appendChild(div);
+      logs.scrollTop = logs.scrollHeight;
+    }
+
+    function triggerPresetChat(presetKey) {
+      let promptText = "";
+      if (presetKey === 'can_achieve') promptText = "Can I achieve my financial goals with my current savings rate?";
+      if (presetKey === 'emergency') promptText = "How much should I set aside in an emergency fund according to guidelines?";
+      if (presetKey === 'sebi') promptText = "What are the core SEBI guidelines for mutual fund investors?";
+      if (presetKey === 'budget_rule') promptText = "Explain the 50/30/20 rule of saving and how it applies to my current income.";
+
+      appendMessage('user', promptText);
+      document.getElementById('chat-typing-indicator').classList.remove('hidden');
+
+      setTimeout(() => {
+        const rawResponse = mockRAGBase[presetKey];
+        let answer = rawResponse.answer;
+
+        const margin = Math.max(0, state.profile.monthlyIncome - state.profile.monthlyExpenses);
+        const rate = state.profile.monthlyIncome > 0 ? Math.round((margin / state.profile.monthlyIncome) * 100) : 0;
+        const buffer_3 = margin * 3;
+        const buffer_6 = margin * 6;
+        const assets_coverage = state.profile.monthlyExpenses > 0 ? (state.profile.currentAssets / state.profile.monthlyExpenses).toFixed(1) : '0';
+
+        // Replace placeholders dynamically
+        answer = answer.replace("[margin]", margin.toLocaleString('en-IN'))
+                       .replace("[rate]", rate)
+                       .replace("[goal_count]", state.goals.length)
+                       .replace("[expenses]", state.profile.monthlyExpenses.toLocaleString('en-IN'))
+                       .replace("[buffer_3]", (state.profile.monthlyExpenses * 3).toLocaleString('en-IN'))
+                       .replace("[buffer_6]", (state.profile.monthlyExpenses * 6).toLocaleString('en-IN'))
+                       .replace("[assets]", state.profile.currentAssets.toLocaleString('en-IN'))
+                       .replace("[assets_coverage]", assets_coverage)
+                       .replace("[income]", state.profile.monthlyIncome.toLocaleString('en-IN'))
+                       .replace("[needs]", (state.profile.monthlyIncome * 0.5).toLocaleString('en-IN'))
+                       .replace("[wants]", (state.profile.monthlyIncome * 0.3).toLocaleString('en-IN'))
+                       .replace("[savings_target]", (state.profile.monthlyIncome * 0.2).toLocaleString('en-IN'))
+                       .replace("[savings_evaluation]", rate >= 20 ? "more than" : "less than")
+                       .replace("[assets_evaluation]", state.profile.currentAssets >= state.profile.monthlyExpenses * 6 ? "fully funded and solid!" : "slightly short of the recommended 6-month buffer. Focus on building this first.");
+
+        if (presetKey === 'can_achieve') {
+          const listText = state.goals.length === 0 
+            ? "* (No target goals defined)" 
+            : state.goals.map(g => `* **${g.name}**: ₹${g.targetAmount.toLocaleString('en-IN')} in ${g.targetYear} (Priority: ${g.priority})`).join('\n');
+          answer = answer.replace("[goals_list]", listText);
+        }
+
+        document.getElementById('chat-typing-indicator').classList.add('hidden');
+        appendMessage('assistant', answer);
+
+        // Update retrieved context container
+        const contextContainer = document.getElementById('retrieved-contexts-container');
+        contextContainer.innerHTML = rawResponse.contexts.map(ctx => `
+          <div class="p-3 rounded bg-zinc-900/60 border border-zinc-850 space-y-1.5">
+            <div class="flex justify-between text-[9px] font-mono text-zinc-550">
+              <span>Source: ${ctx.source}</span>
+              <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> SEC Validated</span>
+            </div>
+            <p class="text-[10px] text-zinc-400 leading-relaxed italic">"${ctx.text}"</p>
+          </div>
+        `).join('');
+
+      }, 1000);
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendMessage('user', text);
+      input.value = '';
+      document.getElementById('chat-typing-indicator').classList.remove('hidden');
+
+      setTimeout(() => {
+        document.getElementById('chat-typing-indicator').classList.add('hidden');
+        appendMessage('assistant', `I have scanned the local Indian financial regulation databases (SEBI and RBI) for "${text}". 
+        
+Your current profile settings:
+* Income: ₹${state.profile.monthlyIncome.toLocaleString('en-IN')}/mo
+* Expenses: ₹${state.profile.monthlyExpenses.toLocaleString('en-IN')}/mo
+* Current Assets: ₹${state.profile.currentAssets.toLocaleString('en-IN')}
+
+To compound this parameter, please configure a target goal inside the Profile & Goals tab or test layout triggers in the What-If Simulator.`);
+        
+        document.getElementById('retrieved-contexts-container').innerHTML = `
+          <div class="p-3 rounded bg-zinc-900/60 border border-zinc-850 space-y-1.5">
+            <div class="flex justify-between text-[9px] font-mono text-zinc-550">
+              <span>Source: financial_planning.txt</span>
+              <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Standard Compliance</span>
+            </div>
+            <p class="text-[10px] text-zinc-400 leading-relaxed italic">"General Financial Advice: Always consult with a registered investment advisor before committing significant funds to high-volatility financial instruments."</p>
+          </div>
+        `;
+      }, 1000);
+    }
+
+    // Initialize
+    window.onload = () => {
+      loadState();
+      appendMessage('assistant', state.chat[0].text);
+      lucide.createIcons();
+    };
+  </script>
+</body>
+</html>
